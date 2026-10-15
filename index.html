@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DriveEase - Car Rental Portal</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col font-sans">
+
+    <!-- Top Navigation Header -->
+    <header class="bg-slate-900 text-white shadow-lg sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 py-4 flex flex-wrap justify-between items-center">
+            <div class="flex items-center space-x-3">
+                <i class="fa-solid fa-car-side text-amber-500 text-2xl"></i>
+                <h1 class="text-2xl font-bold tracking-tight">Drive<span class="text-amber-500">Ease</span></h1>
+            </div>
+
+            <!-- API Endpoint Config Control -->
+            <div class="flex items-center space-x-2 bg-slate-800 p-2 rounded-lg border border-slate-700 text-sm">
+                <span class="text-xs text-slate-400">Backend API:</span>
+                <input type="text" id="apiUrlInput" value="https://mollusk-etching-expulsion.ngrok-free.dev" 
+                       class="bg-slate-900 border border-slate-600 rounded px-2 py-1 text-xs text-amber-300 w-64 focus:outline-none focus:border-amber-500">
+                <button onclick="saveApiUrl()" class="bg-amber-500 hover:bg-amber-600 text-slate-900 font-semibold px-3 py-1 rounded text-xs transition">
+                    Connect
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="max-w-7xl mx-auto px-4 py-8 flex-grow">
+        
+        <!-- Hero Banner -->
+        <div class="bg-gradient-to-r from-slate-900 via-slate-800 to-indigo-950 text-white rounded-2xl p-8 mb-8 shadow-xl relative overflow-hidden">
+            <div class="relative z-10 max-w-2xl">
+                <span class="bg-amber-500/20 text-amber-400 text-xs font-semibold px-3 py-1 rounded-full uppercase tracking-wider mb-3 inline-block border border-amber-500/30">FastAPI Powered</span>
+                <h2 class="text-4xl font-extrabold mb-3">Premium Fleet, Unmatched Freedom</h2>
+                <p class="text-slate-300 mb-6 text-sm leading-relaxed">Select from our wide range of luxury sedans, electric vehicles, and heavy-duty SUVs. Connect your dynamic FastAPI backend to start booking instantly.</p>
+                
+                <!-- Category Filter Buttons -->
+                <div class="flex flex-wrap gap-2" id="categoryFilters">
+                    <button onclick="filterCategory('')" class="bg-amber-500 text-slate-900 font-medium px-4 py-2 rounded-lg text-sm hover:bg-amber-400 transition">All Vehicles</button>
+                    <button onclick="filterCategory('Sedan')" class="bg-slate-800 text-slate-300 hover:bg-slate-700 px-4 py-2 rounded-lg text-sm border border-slate-700 transition">Sedan</button>
+                    <button onclick="filterCategory('SUV')" class="bg-slate-800 text-slate-300 hover:bg-slate-700 px-4 py-2 rounded-lg text-sm border border-slate-700 transition">SUV</button>
+                    <button onclick="filterCategory('Luxury')" class="bg-slate-800 text-slate-300 hover:bg-slate-700 px-4 py-2 rounded-lg text-sm border border-slate-700 transition">Luxury</button>
+                    <button onclick="filterCategory('Electric')" class="bg-slate-800 text-slate-300 hover:bg-slate-700 px-4 py-2 rounded-lg text-sm border border-slate-700 transition">Electric</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Connection Status Indicator -->
+        <div id="statusAlert" class="mb-6 hidden p-4 rounded-xl border text-sm flex items-center justify-between">
+            <span id="statusMessage">Connecting to backend...</span>
+            <button onclick="fetchCars()" class="underline text-xs font-semibold">Retry</button>
+        </div>
+
+        <!-- Car Fleet Grid -->
+        <div class="flex items-center justify-between mb-6">
+            <h3 class="text-xl font-bold text-slate-800 flex items-center gap-2">
+                <i class="fa-solid fa-list text-amber-500"></i> Available Fleet
+            </h3>
+            <span id="carCountBadge" class="bg-slate-200 text-slate-700 text-xs font-semibold px-2.5 py-1 rounded-full">0 Cars</span>
+        </div>
+
+        <div id="carGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <!-- Loading Skeleton -->
+            <div class="bg-white p-6 rounded-2xl border border-slate-200 animate-pulse h-64"></div>
+            <div class="bg-white p-6 rounded-2xl border border-slate-200 animate-pulse h-64"></div>
+            <div class="bg-white p-6 rounded-2xl border border-slate-200 animate-pulse h-64"></div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-slate-900 text-slate-400 py-6 border-t border-slate-800 text-center text-sm">
+        <p>© 2026 DriveEase Car Rental System | FastAPI & GitHub Pages Deployment</p>
+    </footer>
+
+    <!-- JavaScript Application Logic -->
+    <script>
+        let currentCategory = '';
+
+        function getApiUrl() {
+            return document.getElementById('apiUrlInput').value.replace(/\/$/, "");
+        }
+
+        function saveApiUrl() {
+            fetchCars();
+        }
+
+        function filterCategory(category) {
+            currentCategory = category;
+            fetchCars();
+        }
+
+        async function fetchCars() {
+            const grid = document.getElementById('carGrid');
+            const alert = document.getElementById('statusAlert');
+            const statusMsg = document.getElementById('statusMessage');
+            const baseUrl = getApiUrl();
+            
+            // Show loading state
+            grid.innerHTML = '<div class="col-span-full text-center py-12"><i class="fa-solid fa-circle-notch fa-spin text-3xl text-amber-500 mb-2"></i><p class="text-slate-500">Loading cars from backend...</p></div>';
+
+            let endpoint = `${baseUrl}/cars`;
+            if (currentCategory) {
+                endpoint += `?category=${encodeURIComponent(currentCategory)}`;
+            }
+
+            try {
+                const response = await fetch(endpoint, {
+                    headers: { 'ngrok-skip-browser-warning': 'true' }
+                });
+
+                if (!response.ok) throw new Error(`HTTP Error: ${response.status}`);
+                
+                const cars = await response.json();
+
+                // Update Status
+                alert.className = "mb-6 p-4 rounded-xl border bg-emerald-50 border-emerald-200 text-emerald-800 text-sm flex items-center justify-between";
+                statusMsg.innerHTML = `<i class="fa-solid fa-circle-check mr-2"></i> Successfully connected to <strong>${baseUrl}</strong>`;
+                alert.classList.remove('hidden');
+
+                document.getElementById('carCountBadge').innerText = `${cars.length} Cars Available`;
+
+                if (cars.length === 0) {
+                    grid.innerHTML = '<div class="col-span-full text-center py-12 bg-white rounded-2xl border border-dashed border-slate-300"><i class="fa-solid fa-car-tunnel text-4xl text-slate-300 mb-2"></i><p class="text-slate-500">No cars found for this category.</p></div>';
+                    return;
+                }
+
+                // Render Cars
+                grid.innerHTML = cars.map(car => `
+                    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition overflow-hidden flex flex-col">
+                        <div class="bg-slate-100 h-44 flex items-center justify-center p-4 relative">
+                            <i class="fa-solid fa-car text-6xl text-slate-300"></i>
+                            <span class="absolute top-3 right-3 bg-slate-900 text-amber-400 text-xs font-bold px-2 py-1 rounded-md shadow">
+                                $${car.daily_rate || car.price || '45'}/day
+                            </span>
+                            <span class="absolute top-3 left-3 bg-amber-100 text-amber-800 text-xs font-semibold px-2 py-1 rounded-md">
+                                ${car.category || 'Standard'}
+                            </span>
+                        </div>
+                        <div class="p-5 flex-grow flex flex-col justify-between">
+                            <div>
+                                <h4 class="text-lg font-bold text-slate-800 mb-1">${car.name || car.model || 'Rental Vehicle'}</h4>
+                                <p class="text-xs text-slate-500 mb-4">${car.description || 'Reliable vehicle with high safety rating and modern features.'}</p>
+                            </div>
+                            <button onclick="alert('Booking feature active! Car ID: ${car.id || 1}')" 
+                                    class="w-full bg-slate-900 hover:bg-slate-800 text-white font-medium py-2.5 rounded-xl text-sm transition flex items-center justify-center gap-2">
+                                <i class="fa-solid fa-key text-amber-400"></i> Reserve Now
+                            </button>
+                        </div>
+                    </div>
+                `).join('');
+
+            } catch (error) {
+                alert.className = "mb-6 p-4 rounded-xl border bg-rose-50 border-rose-200 text-rose-800 text-sm flex items-center justify-between";
+                statusMsg.innerHTML = `<i class="fa-solid fa-triangle-exclamation mr-2"></i> Could not fetch cars from backend. Check your Ngrok URL.`;
+                alert.classList.remove('hidden');
+                
+                grid.innerHTML = `<div class="col-span-full bg-rose-50 border border-rose-200 rounded-2xl p-8 text-center text-rose-700">
+                    <p class="font-bold mb-1">Failed to load fleet data</p>
+                    <p class="text-xs">${error.message}</p>
+                </div>`;
+            }
+        }
+
+        // Initialize on page load
+        window.onload = fetchCars;
+    </script>
+</body>
+</html>
