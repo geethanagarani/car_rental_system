@@ -1,0 +1,1194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Apex Elite Rentals - Premium Fleet Management & Car Rental</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+                    },
+                    colors: {
+                        gold: {
+                            400: '#FACC15',
+                            500: '#EAB308',
+                            600: '#CA8A04',
+                            accent: '#D4AF37',
+                        },
+                        navy: {
+                            900: '#0B132B',
+                            800: '#1C2541',
+                            700: '#3A506B',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+        .scrollbar-thin::-webkit-scrollbar {
+            height: 6px;
+            width: 6px;
+        }
+        .scrollbar-thin::-webkit-scrollbar-track {
+            background: #1C2541;
+        }
+        .scrollbar-thin::-webkit-scrollbar-thumb {
+            background: #3A506B;
+            border-radius: 4px;
+        }
+        .glass-card {
+            background: rgba(28, 37, 65, 0.7);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+    </style>
+</head>
+<body class="bg-navy-900 text-slate-100 min-h-screen flex flex-col justify-between selection:bg-gold-accent selection:text-navy-900">
+
+    <!-- Toast Notification Hub -->
+    <div id="toast-container" class="fixed top-5 right-5 z-50 flex flex-col gap-3 max-w-sm pointer-events-none"></div>
+
+    <!-- Header Navigation -->
+    <header class="sticky top-0 z-40 bg-navy-900/90 backdrop-blur-md border-b border-slate-800">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-20">
+                <!-- Brand Logo -->
+                <div class="flex items-center space-x-3 cursor-pointer" onclick="switchTab('fleet')">
+                    <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-gold-accent to-amber-200 flex items-center justify-center text-navy-900 shadow-lg shadow-amber-500/10">
+                        <i data-lucide="car" class="w-6 h-6 stroke-[2.5]"></i>
+                    </div>
+                    <div>
+                        <span class="text-xl font-extrabold tracking-tight bg-gradient-to-r from-white via-slate-200 to-gold-accent bg-clip-text text-transparent">
+                            APEX ELITE
+                        </span>
+                        <span class="block text-[10px] tracking-widest text-gold-accent uppercase font-bold">Luxury & Everyday Rentals</span>
+                    </div>
+                </div>
+
+                <!-- Navigation Links -->
+                <nav class="hidden md:flex items-center space-x-1 bg-navy-800/80 p-1.5 rounded-2xl border border-slate-700/50">
+                    <button onclick="switchTab('fleet')" id="nav-fleet" class="nav-btn px-5 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 bg-gold-accent text-navy-900 shadow-md">
+                        <i data-lucide="layout-grid" class="w-4 h-4 inline-block mr-1.5 -mt-0.5"></i> Vehicle Fleet
+                    </button>
+                    <button onclick="switchTab('manage')" id="nav-manage" class="nav-btn px-5 py-2.5 rounded-xl text-sm font-semibold text-slate-300 hover:text-white hover:bg-slate-800/60 transition-all duration-200">
+                        <i data-lucide="sliders" class="w-4 h-4 inline-block mr-1.5 -mt-0.5"></i> Inventory & Returns
+                    </button>
+                    <button onclick="switchTab('analytics')" id="nav-analytics" class="nav-btn px-5 py-2.5 rounded-xl text-sm font-semibold text-slate-300 hover:text-white hover:bg-slate-800/60 transition-all duration-200">
+                        <i data-lucide="bar-chart-3" class="w-4 h-4 inline-block mr-1.5 -mt-0.5"></i> Analytics & Reports
+                    </button>
+                </nav>
+
+                <!-- Action Button / Quick Add -->
+                <div class="hidden sm:flex items-center space-x-3">
+                    <button onclick="openAddCarModal()" class="px-4 py-2.5 rounded-xl border border-gold-accent/40 text-gold-accent hover:bg-gold-accent hover:text-navy-900 font-semibold text-sm transition-all duration-200 flex items-center gap-2 shadow-sm">
+                        <i data-lucide="plus-circle" class="w-4 h-4"></i> Add Vehicle
+                    </button>
+                </div>
+
+                <!-- Mobile Menu Button -->
+                <button onclick="toggleMobileNav()" class="md:hidden p-2 rounded-xl text-slate-300 hover:bg-slate-800 focus:outline-none">
+                    <i data-lucide="menu" class="w-6 h-6"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Mobile Navigation Menu -->
+        <div id="mobile-nav" class="hidden md:hidden border-b border-slate-800 bg-navy-800 px-4 pt-2 pb-4 space-y-2">
+            <button onclick="switchTab('fleet'); toggleMobileNav();" class="w-full text-left px-4 py-2.5 rounded-xl font-semibold text-slate-200 hover:bg-slate-700/50 flex items-center gap-2">
+                <i data-lucide="layout-grid" class="w-4 h-4"></i> Vehicle Fleet
+            </button>
+            <button onclick="switchTab('manage'); toggleMobileNav();" class="w-full text-left px-4 py-2.5 rounded-xl font-semibold text-slate-200 hover:bg-slate-700/50 flex items-center gap-2">
+                <i data-lucide="sliders" class="w-4 h-4"></i> Inventory & Returns
+            </button>
+            <button onclick="switchTab('analytics'); toggleMobileNav();" class="w-full text-left px-4 py-2.5 rounded-xl font-semibold text-slate-200 hover:bg-slate-700/50 flex items-center gap-2">
+                <i data-lucide="bar-chart-3" class="w-4 h-4"></i> Analytics & Reports
+            </button>
+            <button onclick="openAddCarModal(); toggleMobileNav();" class="w-full text-left px-4 py-2.5 rounded-xl font-semibold text-gold-accent hover:bg-slate-700/50 flex items-center gap-2">
+                <i data-lucide="plus-circle" class="w-4 h-4"></i> Add New Vehicle
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Content Body -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-grow w-full">
+
+        <!-- ================= TAB 1: FLEET CATALOG ================= -->
+        <section id="tab-fleet" class="tab-content space-y-8">
+            <!-- Hero Banner & Stats Quick Peek -->
+            <div class="relative overflow-hidden rounded-3xl bg-gradient-to-r from-navy-800 via-navy-700 to-slate-900 border border-slate-700/60 p-8 md:p-10 shadow-2xl">
+                <div class="absolute -right-10 -bottom-10 w-96 h-96 bg-gold-accent/10 rounded-full blur-3xl pointer-events-none"></div>
+                <div class="relative z-10 max-w-2xl">
+                    <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-gold-accent/20 text-gold-accent border border-gold-accent/30 mb-4">
+                        <i data-lucide="sparkles" class="w-3.5 h-3.5"></i> Premier Fleet Selection
+                    </span>
+                    <h1 class="text-3xl sm:text-4xl md:text-5xl font-extrabold text-white tracking-tight leading-tight">
+                        Drive Excellence. <br>Experience <span class="bg-gradient-to-r from-amber-200 to-gold-accent bg-clip-text text-transparent">Supreme Mobility</span>.
+                    </h1>
+                    <p class="mt-4 text-slate-300 text-base sm:text-lg leading-relaxed">
+                        Select from our elite collection of luxury sedans, electric cruisers, high-performance sports models, and rugged SUVs. Seamless online booking in seconds.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Filters & Search Toolbar -->
+            <div class="glass-card rounded-2xl p-4 md:p-6 shadow-xl border border-slate-700/50 space-y-4">
+                <div class="grid grid-cols-1 md:grid-cols-12 gap-4 items-center">
+                    <!-- Search Input -->
+                    <div class="md:col-span-5 relative">
+                        <i data-lucide="search" class="w-5 h-5 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400"></i>
+                        <input type="text" id="search-input" onkeyup="applyFilters()" placeholder="Search by make, model, or year..." 
+                            class="w-full bg-navy-900/80 border border-slate-700 rounded-xl pl-11 pr-4 py-3 text-sm text-slate-100 placeholder-slate-400 focus:outline-none focus:border-gold-accent transition">
+                    </div>
+
+                    <!-- Category Pills -->
+                    <div class="md:col-span-7 flex items-center gap-2 overflow-x-auto scrollbar-thin pb-2 md:pb-0">
+                        <button onclick="filterCategory('All')" class="category-btn active px-4 py-2.5 rounded-xl text-xs font-bold whitespace-nowrap bg-gold-accent text-navy-900 border border-gold-accent transition">
+                            All Vehicles (<span id="count-all">0</span>)
+                        </button>
+                        <button onclick="filterCategory('Sedan')" class="category-btn px-4 py-2.5 rounded-xl text-xs font-semibold whitespace-nowrap bg-navy-900/60 text-slate-300 border border-slate-700 hover:border-slate-500 transition">
+                            Sedans (<span id="count-sedan">0</span>)
+                        </button>
+                        <button onclick="filterCategory('SUV')" class="category-btn px-4 py-2.5 rounded-xl text-xs font-semibold whitespace-nowrap bg-navy-900/60 text-slate-300 border border-slate-700 hover:border-slate-500 transition">
+                            SUVs (<span id="count-suv">0</span>)
+                        </button>
+                        <button onclick="filterCategory('Luxury')" class="category-btn px-4 py-2.5 rounded-xl text-xs font-semibold whitespace-nowrap bg-navy-900/60 text-slate-300 border border-slate-700 hover:border-slate-500 transition">
+                            Luxury (<span id="count-luxury">0</span>)
+                        </button>
+                        <button onclick="filterCategory('Sports')" class="category-btn px-4 py-2.5 rounded-xl text-xs font-semibold whitespace-nowrap bg-navy-900/60 text-slate-300 border border-slate-700 hover:border-slate-500 transition">
+                            Sports (<span id="count-sports">0</span>)
+                        </button>
+                        <button onclick="filterCategory('Electric')" class="category-btn px-4 py-2.5 rounded-xl text-xs font-semibold whitespace-nowrap bg-navy-900/60 text-slate-300 border border-slate-700 hover:border-slate-500 transition">
+                            EVs (<span id="count-electric">0</span>)
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Secondary Filters: Status & Sort -->
+                <div class="flex flex-wrap items-center justify-between gap-4 pt-3 border-t border-slate-800/80 text-xs text-slate-400">
+                    <div class="flex items-center gap-4">
+                        <label class="flex items-center gap-2 cursor-pointer text-slate-300">
+                            <input type="checkbox" id="available-only-toggle" onchange="applyFilters()" class="rounded bg-navy-900 border-slate-700 text-gold-accent focus:ring-0">
+                            Show Available Only
+                        </label>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <span class="font-medium text-slate-400">Sort By:</span>
+                        <select id="sort-select" onchange="applyFilters()" class="bg-navy-900 border border-slate-700 rounded-lg px-3 py-1.5 text-xs text-slate-200 focus:outline-none focus:border-gold-accent">
+                            <option value="default">Default Order</option>
+                            <option value="price-low">Price: Low to High</option>
+                            <option value="price-high">Price: High to Low</option>
+                            <option value="year-desc">Year: Newest First</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Vehicles Grid Container -->
+            <div id="fleet-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                <!-- Vehicle Cards Dynamically Rendered -->
+            </div>
+
+            <!-- Empty State Display -->
+            <div id="empty-fleet-state" class="hidden text-center py-16 bg-navy-800/30 rounded-3xl border border-slate-800">
+                <i data-lucide="car-off" class="w-16 h-16 mx-auto text-slate-600 mb-4"></i>
+                <h3 class="text-xl font-bold text-slate-300">No Vehicles Match Your Search</h3>
+                <p class="text-slate-500 text-sm mt-1">Try resetting your filters or adjusting your keywords.</p>
+                <button onclick="resetFilters()" class="mt-4 px-4 py-2 rounded-xl bg-slate-800 text-gold-accent hover:bg-slate-700 text-xs font-semibold">
+                    Reset All Filters
+                </button>
+            </div>
+        </section>
+
+        <!-- ================= TAB 2: INVENTORY & RETURNS MANAGEMENT ================= -->
+        <section id="tab-manage" class="tab-content hidden space-y-8">
+            <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-800 pb-5">
+                <div>
+                    <h2 class="text-2xl font-bold text-white flex items-center gap-2.5">
+                        <i data-lucide="sliders" class="text-gold-accent"></i> Inventory & Return Controls
+                    </h2>
+                    <p class="text-slate-400 text-sm">Manage vehicle availability, process customer returns, and expand fleet listings.</p>
+                </div>
+                <button onclick="openAddCarModal()" class="px-5 py-2.5 rounded-xl bg-gold-accent text-navy-900 font-bold text-sm hover:bg-amber-400 transition shadow-lg shadow-amber-500/10 flex items-center gap-2 self-start md:self-auto">
+                    <i data-lucide="plus-circle" class="w-4 h-4"></i> Add New Vehicle To Fleet
+                </button>
+            </div>
+
+            <!-- Inventory Quick Status Overview Table -->
+            <div class="glass-card rounded-2xl overflow-hidden border border-slate-700/60 shadow-xl">
+                <div class="px-6 py-4 bg-navy-800/80 border-b border-slate-700/60 flex items-center justify-between">
+                    <h3 class="font-bold text-slate-200 text-sm uppercase tracking-wider">Fleet Inventory Roster</h3>
+                    <span id="inventory-count-badge" class="text-xs bg-slate-700 text-slate-300 px-2.5 py-1 rounded-full font-bold">12 Total Units</span>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-sm text-slate-300">
+                        <thead class="bg-navy-900/80 text-xs uppercase text-slate-400 border-b border-slate-700/60 font-semibold">
+                            <tr>
+                                <th class="px-6 py-3.5">Vehicle</th>
+                                <th class="px-6 py-3.5">Category</th>
+                                <th class="px-6 py-3.5">Daily Rate</th>
+                                <th class="px-6 py-3.5">Specs</th>
+                                <th class="px-6 py-3.5">Status</th>
+                                <th class="px-6 py-3.5 text-right">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="inventory-table-body" class="divide-y divide-slate-800">
+                            <!-- Rows Rendered Dynamically -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= TAB 3: ANALYTICS & REPORTS ================= -->
+        <section id="tab-analytics" class="tab-content hidden space-y-8">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-800 pb-5">
+                <div>
+                    <h2 class="text-2xl font-bold text-white flex items-center gap-2.5">
+                        <i data-lucide="bar-chart-3" class="text-gold-accent"></i> Performance & Analytics
+                    </h2>
+                    <p class="text-slate-400 text-sm">Real-time revenue metrics, active lease metrics, and exportable financial logs.</p>
+                </div>
+                <button onclick="exportToCSV()" class="px-4 py-2.5 rounded-xl border border-slate-700 bg-navy-800 hover:bg-slate-700 text-slate-200 font-semibold text-sm transition flex items-center gap-2 self-start sm:self-auto">
+                    <i data-lucide="download" class="w-4 h-4 text-gold-accent"></i> Export Rentals CSV
+                </button>
+            </div>
+
+            <!-- Metric Summary Cards -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+                <div class="glass-card p-6 rounded-2xl border border-slate-700/60">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Total Revenue</span>
+                        <div class="p-2 rounded-xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                            <i data-lucide="dollar-sign" class="w-5 h-5"></i>
+                        </div>
+                    </div>
+                    <p id="stat-revenue" class="text-3xl font-extrabold text-white mt-3">$0.00</p>
+                    <span class="text-[11px] text-emerald-400 font-medium inline-flex items-center gap-1 mt-1">
+                        <i data-lucide="trending-up" class="w-3 h-3"></i> Real-time calculation
+                    </span>
+                </div>
+
+                <div class="glass-card p-6 rounded-2xl border border-slate-700/60">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Active Rentals</span>
+                        <div class="p-2 rounded-xl bg-sky-500/10 text-sky-400 border border-sky-500/20">
+                            <i data-lucide="key" class="w-5 h-5"></i>
+                        </div>
+                    </div>
+                    <p id="stat-active" class="text-3xl font-extrabold text-white mt-3">0</p>
+                    <span class="text-[11px] text-slate-400 font-medium mt-1 inline-block">Vehicles currently on lease</span>
+                </div>
+
+                <div class="glass-card p-6 rounded-2xl border border-slate-700/60">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Fleet Occupancy</span>
+                        <div class="p-2 rounded-xl bg-amber-500/10 text-amber-400 border border-amber-500/20">
+                            <i data-lucide="pie-chart" class="w-5 h-5"></i>
+                        </div>
+                    </div>
+                    <p id="stat-occupancy" class="text-3xl font-extrabold text-white mt-3">0%</p>
+                    <span class="text-[11px] text-amber-400 font-medium mt-1 inline-block">Utilization percentage</span>
+                </div>
+
+                <div class="glass-card p-6 rounded-2xl border border-slate-700/60">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Total Fleet Size</span>
+                        <div class="p-2 rounded-xl bg-purple-500/10 text-purple-400 border border-purple-500/20">
+                            <i data-lucide="car" class="w-5 h-5"></i>
+                        </div>
+                    </div>
+                    <p id="stat-total-cars" class="text-3xl font-extrabold text-white mt-3">12</p>
+                    <span class="text-[11px] text-slate-400 font-medium mt-1 inline-block">Registered catalog units</span>
+                </div>
+            </div>
+
+            <!-- Transaction History Log -->
+            <div class="glass-card rounded-2xl border border-slate-700/60 shadow-xl overflow-hidden">
+                <div class="px-6 py-4 bg-navy-800/80 border-b border-slate-700/60 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                    <h3 class="font-bold text-slate-200 text-sm uppercase tracking-wider flex items-center gap-2">
+                        <i data-lucide="history" class="w-4 h-4 text-gold-accent"></i> Rental Transaction Ledger
+                    </h3>
+                    <input type="text" id="report-search" onkeyup="filterReportTable()" placeholder="Search customer or vehicle..." 
+                        class="bg-navy-900 border border-slate-700 rounded-lg px-3 py-1.5 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-gold-accent">
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-sm text-slate-300">
+                        <thead class="bg-navy-900/80 text-xs uppercase text-slate-400 border-b border-slate-700/60 font-semibold">
+                            <tr>
+                                <th class="px-6 py-3.5">Booking Ref</th>
+                                <th class="px-6 py-3.5">Customer</th>
+                                <th class="px-6 py-3.5">Vehicle Rented</th>
+                                <th class="px-6 py-3.5">Duration</th>
+                                <th class="px-6 py-3.5">Add-ons</th>
+                                <th class="px-6 py-3.5">Total Paid</th>
+                                <th class="px-6 py-3.5">Status</th>
+                                <th class="px-6 py-3.5">Date</th>
+                            </tr>
+                        </thead>
+                        <tbody id="rental-history-table" class="divide-y divide-slate-800">
+                            <!-- Dynamically injected -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="border-t border-slate-800 bg-navy-900 py-6 mt-12">
+        <div class="max-w-7xl mx-auto px-4 text-center text-xs text-slate-500 flex flex-col sm:flex-row justify-between items-center gap-3">
+            <p>© 2026 Apex Elite Rentals Inc. All rights reserved. Professional Fleet System.</p>
+            <p class="flex items-center gap-1.5 text-slate-400">
+                <i data-lucide="shield-check" class="w-4 h-4 text-emerald-400"></i> Verified Enterprise Fleet Management
+            </p>
+        </div>
+    </footer>
+
+    <!-- ================= MODAL 1: BOOKING MODAL ================= -->
+    <div id="booking-modal" class="fixed inset-0 z-50 bg-navy-900/80 backdrop-blur-sm flex items-center justify-center p-4 hidden">
+        <div class="glass-card bg-navy-800 w-full max-w-xl rounded-3xl border border-slate-700 shadow-2xl overflow-hidden transform transition-all">
+            <!-- Header -->
+            <div class="px-6 py-5 border-b border-slate-700/80 flex items-center justify-between bg-navy-900/60">
+                <div class="flex items-center gap-3">
+                    <div class="p-2 rounded-xl bg-gold-accent/10 text-gold-accent">
+                        <i data-lucide="key" class="w-5 h-5"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-lg text-white">Complete Booking Request</h3>
+                        <p id="modal-car-name" class="text-xs text-gold-accent font-medium">Vehicle Selected</p>
+                    </div>
+                </div>
+                <button onclick="closeBookingModal()" class="text-slate-400 hover:text-white p-1 rounded-lg">
+                    <i data-lucide="x" class="w-6 h-6"></i>
+                </button>
+            </div>
+
+            <!-- Form Body -->
+            <form id="booking-form" onsubmit="handleBookingSubmit(event)" class="p-6 space-y-4">
+                <input type="hidden" id="modal-car-id">
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-300 uppercase mb-1">Customer Name *</label>
+                        <input type="text" id="cust-name" required placeholder="e.g. Jane Doe" 
+                            class="w-full bg-navy-900 border border-slate-700 rounded-xl px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-gold-accent">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-300 uppercase mb-1">Contact Phone / Email *</label>
+                        <input type="text" id="cust-contact" required placeholder="e.g. +1 555-0192" 
+                            class="w-full bg-navy-900 border border-slate-700 rounded-xl px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-gold-accent">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-300 uppercase mb-1">Pickup Date *</label>
+                        <input type="date" id="cust-date" required 
+                            class="w-full bg-navy-900 border border-slate-700 rounded-xl px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-gold-accent">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-300 uppercase mb-1">Rental Duration (Days) *</label>
+                        <input type="number" id="cust-days" min="1" max="60" value="1" onchange="calculateBookingTotal()" oninput="calculateBookingTotal()" required 
+                            class="w-full bg-navy-900 border border-slate-700 rounded-xl px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-gold-accent">
+                    </div>
+                </div>
+
+                <!-- Add-Ons -->
+                <div class="pt-2">
+                    <label class="block text-xs font-bold text-slate-300 uppercase mb-2">Optional Services & Protection</label>
+                    <div class="space-y-2 bg-navy-900/60 p-3.5 rounded-xl border border-slate-700/60 text-xs">
+                        <label class="flex items-center justify-between text-slate-300 cursor-pointer">
+                            <span class="flex items-center gap-2">
+                                <input type="checkbox" id="addon-gps" onchange="calculateBookingTotal()" class="rounded border-slate-700 text-gold-accent focus:ring-0">
+                                GPS Navigation System
+                            </span>
+                            <span class="text-slate-400 font-mono">+$10/day</span>
+                        </label>
+                        <label class="flex items-center justify-between text-slate-300 cursor-pointer">
+                            <span class="flex items-center gap-2">
+                                <input type="checkbox" id="addon-child" onchange="calculateBookingTotal()" class="rounded border-slate-700 text-gold-accent focus:ring-0">
+                                Premium Child Seat
+                            </span>
+                            <span class="text-slate-400 font-mono">+$15/day</span>
+                        </label>
+                        <label class="flex items-center justify-between text-slate-300 cursor-pointer">
+                            <span class="flex items-center gap-2">
+                                <input type="checkbox" id="addon-insurance" onchange="calculateBookingTotal()" class="rounded border-slate-700 text-gold-accent focus:ring-0">
+                                Full Damage Protection Insurance
+                            </span>
+                            <span class="text-slate-400 font-mono">+$25/day</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Price Summary Box -->
+                <div class="bg-navy-900 p-4 rounded-xl border border-slate-700/80 flex items-center justify-between mt-4">
+                    <div>
+                        <p class="text-xs text-slate-400 font-medium">Estimated Total Price</p>
+                        <p class="text-[10px] text-slate-500">Includes base rate & selected add-ons</p>
+                    </div>
+                    <div class="text-right">
+                        <span id="calculated-total" class="text-2xl font-extrabold text-gold-accent">$0.00</span>
+                    </div>
+                </div>
+
+                <!-- Footer Action Buttons -->
+                <div class="flex items-center justify-end gap-3 pt-4 border-t border-slate-700/80">
+                    <button type="button" onclick="closeBookingModal()" class="px-4 py-2.5 rounded-xl border border-slate-700 text-slate-300 hover:bg-slate-800 text-xs font-semibold">
+                        Cancel
+                    </button>
+                    <button type="submit" class="px-6 py-2.5 rounded-xl bg-gold-accent text-navy-900 font-bold text-xs hover:bg-amber-400 transition shadow-lg shadow-amber-500/10 flex items-center gap-1.5">
+                        <i data-lucide="check-circle-2" class="w-4 h-4"></i> Confirm Reservation
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- ================= MODAL 2: ADD VEHICLE MODAL ================= -->
+    <div id="add-car-modal" class="fixed inset-0 z-50 bg-navy-900/80 backdrop-blur-sm flex items-center justify-center p-4 hidden">
+        <div class="glass-card bg-navy-800 w-full max-w-xl rounded-3xl border border-slate-700 shadow-2xl overflow-hidden transform transition-all">
+            <!-- Header -->
+            <div class="px-6 py-5 border-b border-slate-700/80 flex items-center justify-between bg-navy-900/60">
+                <div class="flex items-center gap-3">
+                    <div class="p-2 rounded-xl bg-gold-accent/10 text-gold-accent">
+                        <i data-lucide="plus-circle" class="w-5 h-5"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-lg text-white">Add New Vehicle To Fleet</h3>
+                        <p class="text-xs text-slate-400">Expand the rental agency inventory</p>
+                    </div>
+                </div>
+                <button onclick="closeAddCarModal()" class="text-slate-400 hover:text-white p-1 rounded-lg">
+                    <i data-lucide="x" class="w-6 h-6"></i>
+                </button>
+            </div>
+
+            <!-- Form Body -->
+            <form id="add-car-form" onsubmit="handleAddCarSubmit(event)" class="p-6 space-y-4">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-300 uppercase mb-1">Brand / Make *</label>
+                        <input type="text" id="new-brand" required placeholder="e.g. Audi" 
+                            class="w-full bg-navy-900 border border-slate-700 rounded-xl px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-gold-accent">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-300 uppercase mb-1">Model Name *</label>
+                        <input type="text" id="new-model" required placeholder="e.g. R8 V10" 
+                            class="w-full bg-navy-900 border border-slate-700 rounded-xl px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-gold-accent">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-300 uppercase mb-1">Category *</label>
+                        <select id="new-category" required class="w-full bg-navy-900 border border-slate-700 rounded-xl px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-gold-accent">
+                            <option value="Sedan">Sedan</option>
+                            <option value="SUV">SUV</option>
+                            <option value="Luxury">Luxury</option>
+                            <option value="Sports">Sports</option>
+                            <option value="Electric">Electric</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-300 uppercase mb-1">Model Year *</label>
+                        <input type="number" id="new-year" min="2018" max="2027" value="2025" required 
+                            class="w-full bg-navy-900 border border-slate-700 rounded-xl px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-gold-accent">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-300 uppercase mb-1">Daily Rate ($) *</label>
+                        <input type="number" id="new-price" min="10" step="5" value="120" required 
+                            class="w-full bg-navy-900 border border-slate-700 rounded-xl px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-gold-accent">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-300 uppercase mb-1">Transmission</label>
+                        <select id="new-trans" class="w-full bg-navy-900 border border-slate-700 rounded-xl px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-gold-accent">
+                            <option value="Automatic">Automatic</option>
+                            <option value="Manual">Manual</option>
+                            <option value="Direct Drive">Direct Drive (EV)</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-300 uppercase mb-1">Seating Capacity</label>
+                        <input type="number" id="new-seats" min="2" max="9" value="5" required 
+                            class="w-full bg-navy-900 border border-slate-700 rounded-xl px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-gold-accent">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-slate-300 uppercase mb-1">Image URL (Unsplash or Direct Link)</label>
+                    <input type="url" id="new-image" placeholder="https://images.unsplash.com/..." 
+                        class="w-full bg-navy-900 border border-slate-700 rounded-xl px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-gold-accent">
+                    <p class="text-[10px] text-slate-500 mt-1">Leave blank to assign automatic high-res category preview image.</p>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="flex items-center justify-end gap-3 pt-4 border-t border-slate-700/80">
+                    <button type="button" onclick="closeAddCarModal()" class="px-4 py-2.5 rounded-xl border border-slate-700 text-slate-300 hover:bg-slate-800 text-xs font-semibold">
+                        Cancel
+                    </button>
+                    <button type="submit" class="px-6 py-2.5 rounded-xl bg-gold-accent text-navy-900 font-bold text-xs hover:bg-amber-400 transition shadow-lg shadow-amber-500/10 flex items-center gap-1.5">
+                        <i data-lucide="plus" class="w-4 h-4"></i> Add Vehicle To Roster
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+
+    <!-- JavaScript Application Logic -->
+    <script>
+        // Default Fleet Data Pre-loaded with Unsplash High-Quality Vehicle Imagery
+        const initialFleetData = [
+            {
+                id: 101,
+                brand: "Toyota",
+                model: "Camry",
+                year: 2024,
+                pricePerDay: 60,
+                category: "Sedan",
+                transmission: "Automatic",
+                fuel: "Gasoline",
+                seats: 5,
+                isAvailable: true,
+                image: "https://images.unsplash.com/photo-1621007947382-bb3c3994e3fb?auto=format&fit=crop&w=800&q=80"
+            },
+            {
+                id: 102,
+                brand: "Honda",
+                model: "Accord",
+                year: 2023,
+                pricePerDay: 55,
+                category: "Sedan",
+                transmission: "Automatic",
+                fuel: "Hybrid",
+                seats: 5,
+                isAvailable: true,
+                image: "https://images.unsplash.com/photo-1590362891991-f776e747a588?auto=format&fit=crop&w=800&q=80"
+            },
+            {
+                id: 201,
+                brand: "Jeep",
+                model: "Grand Cherokee",
+                year: 2024,
+                pricePerDay: 90,
+                category: "SUV",
+                transmission: "Automatic",
+                fuel: "4x4 Gasoline",
+                seats: 5,
+                isAvailable: true,
+                image: "https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?auto=format&fit=crop&w=800&q=80"
+            },
+            {
+                id: 202,
+                brand: "Ford",
+                model: "Explorer",
+                year: 2023,
+                pricePerDay: 85,
+                category: "SUV",
+                transmission: "Automatic",
+                fuel: "Gasoline",
+                seats: 7,
+                isAvailable: true,
+                image: "https://images.unsplash.com/photo-1549399542-7e3f8b79c341?auto=format&fit=crop&w=800&q=80"
+            },
+            {
+                id: 301,
+                brand: "Mercedes-Benz",
+                model: "E-Class",
+                year: 2024,
+                pricePerDay: 180,
+                category: "Luxury",
+                transmission: "Automatic",
+                fuel: "Premium",
+                seats: 5,
+                isAvailable: true,
+                image: "https://images.unsplash.com/photo-1618843479313-40f8afb4b4d8?auto=format&fit=crop&w=800&q=80"
+            },
+            {
+                id: 302,
+                brand: "BMW",
+                model: "5 Series",
+                year: 2024,
+                pricePerDay: 175,
+                category: "Luxury",
+                transmission: "Automatic",
+                fuel: "Premium",
+                seats: 5,
+                isAvailable: true,
+                image: "https://images.unsplash.com/photo-1555215695-3004980ad54e?auto=format&fit=crop&w=800&q=80"
+            },
+            {
+                id: 401,
+                brand: "Ford",
+                model: "Mustang GT",
+                year: 2023,
+                pricePerDay: 150,
+                category: "Sports",
+                transmission: "Manual V8",
+                fuel: "Gasoline",
+                seats: 4,
+                isAvailable: true,
+                image: "https://images.unsplash.com/photo-1584345604476-8ec5e12e42dd?auto=format&fit=crop&w=800&q=80"
+            },
+            {
+                id: 402,
+                brand: "Porsche",
+                model: "911 Carrera",
+                year: 2024,
+                pricePerDay: 300,
+                category: "Sports",
+                transmission: "PDK Automatic",
+                fuel: "Premium",
+                seats: 2,
+                isAvailable: true,
+                image: "https://images.unsplash.com/photo-1614162692292-7ac56d7f7f1e?auto=format&fit=crop&w=800&q=80"
+            },
+            {
+                id: 501,
+                brand: "Tesla",
+                model: "Model 3",
+                year: 2024,
+                pricePerDay: 110,
+                category: "Electric",
+                transmission: "Direct Drive",
+                fuel: "Electric",
+                seats: 5,
+                isAvailable: true,
+                image: "https://images.unsplash.com/photo-1560958089-b8a1929cea89?auto=format&fit=crop&w=800&q=80"
+            },
+            {
+                id: 502,
+                brand: "Tesla",
+                model: "Model Y",
+                year: 2024,
+                pricePerDay: 125,
+                category: "Electric",
+                transmission: "Direct Drive",
+                fuel: "Electric",
+                seats: 5,
+                isAvailable: true,
+                image: "https://images.unsplash.com/photo-1536700503339-1e4b06520771?auto=format&fit=crop&w=800&q=80"
+            },
+            {
+                id: 503,
+                brand: "Hyundai",
+                model: "Ioniq 5",
+                year: 2024,
+                pricePerDay: 100,
+                category: "Electric",
+                transmission: "Direct Drive",
+                fuel: "Electric",
+                seats: 5,
+                isAvailable: true,
+                image: "https://images.unsplash.com/photo-1662912803823-383e200c8f13?auto=format&fit=crop&w=800&q=80"
+            }
+        ];
+
+        // State Storage
+        let fleet = [...initialFleetData];
+        let rentalHistory = [];
+        let activeCategoryFilter = "All";
+
+        // DOM Loaded Init
+        document.addEventListener("DOMContentLoaded", () => {
+            // Set Default Pickup Date to Today in booking form
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById("cust-date").value = today;
+
+            renderFleet();
+            updateCountsAndStats();
+            lucide.createIcons();
+        });
+
+        // Tab Switching Handler
+        function switchTab(tabId) {
+            document.querySelectorAll(".tab-content").forEach(el => el.classList.add("hidden"));
+            document.querySelectorAll(".nav-btn").forEach(el => {
+                el.classList.remove("bg-gold-accent", "text-navy-900", "shadow-md");
+                el.classList.add("text-slate-300");
+            });
+
+            document.getElementById(`tab-${tabId}`).classList.remove("hidden");
+            const activeNav = document.getElementById(`nav-${tabId}`);
+            if (activeNav) {
+                activeNav.classList.add("bg-gold-accent", "text-navy-900", "shadow-md");
+                activeNav.classList.remove("text-slate-300");
+            }
+
+            if (tabId === 'manage') renderInventoryTable();
+            if (tabId === 'analytics') renderAnalyticsView();
+            lucide.createIcons();
+        }
+
+        function toggleMobileNav() {
+            document.getElementById('mobile-nav').classList.toggle('hidden');
+        }
+
+        // Category Filter Setup
+        function filterCategory(cat) {
+            activeCategoryFilter = cat;
+            document.querySelectorAll('.category-btn').forEach(btn => {
+                btn.classList.remove('bg-gold-accent', 'text-navy-900', 'active', 'border-gold-accent');
+                btn.classList.add('bg-navy-900/60', 'text-slate-300', 'border-slate-700');
+            });
+            event.currentTarget.classList.add('bg-gold-accent', 'text-navy-900', 'active', 'border-gold-accent');
+            event.currentTarget.classList.remove('bg-navy-900/60', 'text-slate-300', 'border-slate-700');
+            applyFilters();
+        }
+
+        // Master Filter & Sort Logic
+        function applyFilters() {
+            const query = document.getElementById('search-input').value.toLowerCase().trim();
+            const showAvailableOnly = document.getElementById('available-only-toggle').checked;
+            const sortBy = document.getElementById('sort-select').value;
+
+            let filtered = fleet.filter(car => {
+                const matchesSearch = car.brand.toLowerCase().includes(query) || 
+                                      car.model.toLowerCase().includes(query) || 
+                                      car.year.toString().includes(query);
+                const matchesCategory = activeCategoryFilter === "All" || car.category === activeCategoryFilter;
+                const matchesAvailability = !showAvailableOnly || car.isAvailable;
+
+                return matchesSearch && matchesCategory && matchesAvailability;
+            });
+
+            // Sorting
+            if (sortBy === 'price-low') filtered.sort((a, b) => a.pricePerDay - b.pricePerDay);
+            if (sortBy === 'price-high') filtered.sort((a, b) => b.pricePerDay - a.pricePerDay);
+            if (sortBy === 'year-desc') filtered.sort((a, b) => b.year - a.year);
+
+            renderFleetCards(filtered);
+        }
+
+        function resetFilters() {
+            document.getElementById('search-input').value = '';
+            document.getElementById('available-only-toggle').checked = false;
+            document.getElementById('sort-select').value = 'default';
+            filterCategory('All');
+        }
+
+        // Render Fleet Cards into Catalog Grid
+        function renderFleet() {
+            applyFilters();
+        }
+
+        function renderFleetCards(carArray) {
+            const grid = document.getElementById('fleet-grid');
+            const emptyState = document.getElementById('empty-fleet-state');
+
+            if (carArray.length === 0) {
+                grid.innerHTML = '';
+                emptyState.classList.remove('hidden');
+                return;
+            }
+
+            emptyState.classList.add('hidden');
+            grid.innerHTML = carArray.map(car => `
+                <div class="glass-card rounded-2xl overflow-hidden border border-slate-700/60 hover:border-slate-500/80 transition-all duration-300 group flex flex-col justify-between shadow-lg">
+                    <!-- Image Wrapper -->
+                    <div class="relative h-48 overflow-hidden bg-navy-900">
+                        <img src="${car.image}" alt="${car.brand} ${car.model}" 
+                            class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                            onerror="this.src='https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?auto=format&fit=crop&w=800&q=80'">
+                        <div class="absolute top-3 left-3 flex gap-2">
+                            <span class="px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-navy-900/80 text-gold-accent border border-gold-accent/30 backdrop-blur-md">
+                                ${car.category}
+                            </span>
+                        </div>
+                        <div class="absolute top-3 right-3">
+                            ${car.isAvailable 
+                                ? `<span class="px-2.5 py-1 rounded-full text-[10px] font-bold bg-emerald-500/90 text-navy-900 border border-emerald-300 backdrop-blur-md flex items-center gap-1"><i data-lucide="check-circle" class="w-3 h-3"></i> Available</span>`
+                                : `<span class="px-2.5 py-1 rounded-full text-[10px] font-bold bg-rose-500/90 text-white border border-rose-300 backdrop-blur-md flex items-center gap-1"><i data-lucide="clock" class="w-3 h-3"></i> Rented Out</span>`
+                            }
+                        </div>
+                    </div>
+
+                    <!-- Car Details -->
+                    <div class="p-5 flex-grow flex flex-col justify-between space-y-4">
+                        <div>
+                            <p class="text-xs text-slate-400 font-semibold uppercase">${car.year} • ${car.brand}</p>
+                            <h3 class="text-lg font-bold text-white group-hover:text-gold-accent transition-colors">${car.model}</h3>
+                        </div>
+
+                        <!-- Specification Pills -->
+                        <div class="grid grid-cols-3 gap-2 py-2 border-y border-slate-700/50 text-[11px] text-slate-300">
+                            <div class="flex items-center gap-1.5" title="Transmission">
+                                <i data-lucide="gauge" class="w-3.5 h-3.5 text-gold-accent"></i>
+                                <span class="truncate">${car.transmission}</span>
+                            </div>
+                            <div class="flex items-center gap-1.5" title="Power Source">
+                                <i data-lucide="zap" class="w-3.5 h-3.5 text-gold-accent"></i>
+                                <span class="truncate">${car.fuel}</span>
+                            </div>
+                            <div class="flex items-center gap-1.5" title="Seating">
+                                <i data-lucide="users" class="w-3.5 h-3.5 text-gold-accent"></i>
+                                <span>${car.seats} Seats</span>
+                            </div>
+                        </div>
+
+                        <!-- Price & Action -->
+                        <div class="flex items-center justify-between pt-1">
+                            <div>
+                                <span class="text-xl font-extrabold text-white">$${car.pricePerDay}</span>
+                                <span class="text-xs text-slate-400">/ day</span>
+                            </div>
+                            ${car.isAvailable 
+                                ? `<button onclick="openBookingModal(${car.id})" class="px-4 py-2 rounded-xl bg-gold-accent text-navy-900 font-bold text-xs hover:bg-amber-400 transition-all shadow-md shadow-amber-500/10 flex items-center gap-1">
+                                    Rent Vehicle
+                                   </button>`
+                                : `<button disabled class="px-4 py-2 rounded-xl bg-slate-800 text-slate-500 text-xs font-semibold cursor-not-allowed">
+                                    Occupied
+                                   </button>`
+                            }
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+
+            lucide.createIcons();
+        }
+
+        // Category Counters & Metric Calculations
+        function updateCountsAndStats() {
+            document.getElementById('count-all').innerText = fleet.length;
+            document.getElementById('count-sedan').innerText = fleet.filter(c => c.category === 'Sedan').length;
+            document.getElementById('count-suv').innerText = fleet.filter(c => c.category === 'SUV').length;
+            document.getElementById('count-luxury').innerText = fleet.filter(c => c.category === 'Luxury').length;
+            document.getElementById('count-sports').innerText = fleet.filter(c => c.category === 'Sports').length;
+            document.getElementById('count-electric').innerText = fleet.filter(c => c.category === 'Electric').length;
+
+            // Analytics Totals
+            const totalRevenue = rentalHistory.reduce((sum, item) => sum + item.totalCost, 0);
+            const activeRentals = fleet.filter(c => !c.isAvailable).length;
+            const totalCars = fleet.length;
+            const occupancyRate = totalCars > 0 ? Math.round((activeRentals / totalCars) * 100) : 0;
+
+            document.getElementById('stat-revenue').innerText = `$${totalRevenue.toLocaleString('en-US', {minimumFractionDigits: 2})}`;
+            document.getElementById('stat-active').innerText = activeRentals;
+            document.getElementById('stat-occupancy').innerText = `${occupancyRate}%`;
+            document.getElementById('stat-total-cars').innerText = totalCars;
+            document.getElementById('inventory-count-badge').innerText = `${totalCars} Total Units`;
+        }
+
+        // ================= BOOKING WORKFLOW =================
+        let currentBookingCar = null;
+
+        function openBookingModal(carId) {
+            currentBookingCar = fleet.find(c => c.id === carId);
+            if (!currentBookingCar || !currentBookingCar.isAvailable) return;
+
+            document.getElementById('modal-car-id').value = currentBookingCar.id;
+            document.getElementById('modal-car-name').innerText = `${currentBookingCar.year} ${currentBookingCar.brand} ${currentBookingCar.model} ($${currentBookingCar.pricePerDay}/day)`;
+            document.getElementById('cust-days').value = 1;
+            
+            // Reset Addons
+            document.getElementById('addon-gps').checked = false;
+            document.getElementById('addon-child').checked = false;
+            document.getElementById('addon-insurance').checked = false;
+
+            calculateBookingTotal();
+            document.getElementById('booking-modal').classList.remove('hidden');
+        }
+
+        function closeBookingModal() {
+            document.getElementById('booking-modal').classList.add('hidden');
+        }
+
+        function calculateBookingTotal() {
+            if (!currentBookingCar) return;
+
+            const days = parseInt(document.getElementById('cust-days').value) || 1;
+            let dailyAddons = 0;
+
+            if (document.getElementById('addon-gps').checked) dailyAddons += 10;
+            if (document.getElementById('addon-child').checked) dailyAddons += 15;
+            if (document.getElementById('addon-insurance').checked) dailyAddons += 25;
+
+            const totalCost = (currentBookingCar.pricePerDay + dailyAddons) * days;
+            document.getElementById('calculated-total').innerText = `$${totalCost.toFixed(2)}`;
+            return totalCost;
+        }
+
+        function handleBookingSubmit(e) {
+            e.preventDefault();
+            if (!currentBookingCar) return;
+
+            const days = parseInt(document.getElementById('cust-days').value);
+            const totalCost = calculateBookingTotal();
+            const customerName = document.getElementById('cust-name').value.trim();
+            const contact = document.getElementById('cust-contact').value.trim();
+            const pickupDate = document.getElementById('cust-date').value;
+
+            // Mark car as rented out
+            currentBookingCar.isAvailable = false;
+
+            // Collect selected addons list
+            const addons = [];
+            if (document.getElementById('addon-gps').checked) addons.push("GPS");
+            if (document.getElementById('addon-child').checked) addons.push("Child Seat");
+            if (document.getElementById('addon-insurance').checked) addons.push("Insurance");
+
+            // Create record
+            const refNumber = "APX-" + Math.floor(100000 + Math.random() * 900000);
+            const record = {
+                ref: refNumber,
+                carId: currentBookingCar.id,
+                customerName: customerName,
+                contact: contact,
+                carName: `${currentBookingCar.brand} ${currentBookingCar.model}`,
+                days: days,
+                pickupDate: pickupDate,
+                addons: addons.length > 0 ? addons.join(", ") : "None",
+                totalCost: totalCost,
+                status: "Active",
+                timestamp: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+            };
+
+            rentalHistory.unshift(record);
+
+            closeBookingModal();
+            renderFleet();
+            updateCountsAndStats();
+            showToast(`Rental Confirmed! Booking Ref: ${refNumber}`, 'success');
+        }
+
+        // ================= INVENTORY & RETURNS MANAGEMENT =================
+        function renderInventoryTable() {
+            const tbody = document.getElementById('inventory-table-body');
+            tbody.innerHTML = fleet.map(car => `
+                <tr class="hover:bg-navy-800/40 transition">
+                    <td class="px-6 py-4 font-semibold text-white flex items-center gap-3">
+                        <img src="${car.image}" alt="" class="w-10 h-10 rounded-lg object-cover bg-navy-900 border border-slate-700">
+                        <div>
+                            <div>${car.brand} ${car.model}</div>
+                            <span class="text-xs text-slate-500 font-normal">ID: #${car.id} • ${car.year}</span>
+                        </div>
+                    </td>
+                    <td class="px-6 py-4">
+                        <span class="px-2.5 py-1 rounded-full text-xs font-semibold bg-navy-900 text-gold-accent border border-slate-700">
+                            ${car.category}
+                        </span>
+                    </td>
+                    <td class="px-6 py-4 font-bold text-white">$${car.pricePerDay}/day</td>
+                    <td class="px-6 py-4 text-xs text-slate-400">${car.transmission} | ${car.fuel}</td>
+                    <td class="px-6 py-4">
+                        ${car.isAvailable 
+                            ? `<span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"><span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span> Available</span>`
+                            : `<span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold bg-rose-500/10 text-rose-400 border border-rose-500/20"><span class="w-1.5 h-1.5 rounded-full bg-rose-400"></span> Rented Out</span>`
+                        }
+                    </td>
+                    <td class="px-6 py-4 text-right">
+                        ${!car.isAvailable 
+                            ? `<button onclick="returnVehicle(${car.id})" class="px-3 py-1.5 rounded-lg bg-emerald-500/20 hover:bg-emerald-500 text-emerald-300 hover:text-navy-900 text-xs font-bold border border-emerald-500/30 transition flex items-center gap-1 ml-auto">
+                                <i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i> Process Return
+                               </button>`
+                            : `<span class="text-xs text-slate-500 font-medium italic">Ready for rental</span>`
+                        }
+                    </td>
+                </tr>
+            `).join('');
+
+            lucide.createIcons();
+        }
+
+        function returnVehicle(carId) {
+            const car = fleet.find(c => c.id === carId);
+            if (!car) return;
+
+            car.isAvailable = true;
+
+            // Update rental record status
+            const activeRecord = rentalHistory.find(r => r.carId === carId && r.status === "Active");
+            if (activeRecord) activeRecord.status = "Completed";
+
+            renderInventoryTable();
+            renderFleet();
+            updateCountsAndStats();
+            showToast(`${car.brand} ${car.model} returned to available fleet inventory!`, 'info');
+        }
+
+        // ================= ADD NEW CAR WORKFLOW =================
+        function openAddCarModal() {
+            document.getElementById('add-car-modal').classList.remove('hidden');
+        }
+
+        function closeAddCarModal() {
+            document.getElementById('add-car-modal').classList.add('hidden');
+            document.getElementById('add-car-form').reset();
+        }
+
+        function handleAddCarSubmit(e) {
+            e.preventDefault();
+            const brand = document.getElementById('new-brand').value.trim();
+            const model = document.getElementById('new-model').value.trim();
+            const category = document.getElementById('new-category').value;
+            const year = parseInt(document.getElementById('new-year').value);
+            const price = parseFloat(document.getElementById('new-price').value);
+            const trans = document.getElementById('new-trans').value;
+            const seats = parseInt(document.getElementById('new-seats').value);
+            let img = document.getElementById('new-image').value.trim();
+
+            if (!img) {
+                // Fallback Unsplash Photos by category
+                if (category === 'Sports') img = "https://images.unsplash.com/photo-1584345604476-8ec5e12e42dd?auto=format&fit=crop&w=800&q=80";
+                else if (category === 'Electric') img = "https://images.unsplash.com/photo-1560958089-b8a1929cea89?auto=format&fit=crop&w=800&q=80";
+                else if (category === 'SUV') img = "https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?auto=format&fit=crop&w=800&q=80";
+                else if (category === 'Luxury') img = "https://images.unsplash.com/photo-1618843479313-40f8afb4b4d8?auto=format&fit=crop&w=800&q=80";
+                else img = "https://images.unsplash.com/photo-1621007947382-bb3c3994e3fb?auto=format&fit=crop&w=800&q=80";
+            }
+
+            const newCar = {
+                id: Math.floor(600 + Math.random() * 300),
+                brand: brand,
+                model: model,
+                year: year,
+                pricePerDay: price,
+                category: category,
+                transmission: trans,
+                fuel: category === 'Electric' ? 'Electric' : 'Gasoline',
+                seats: seats,
+                isAvailable: true,
+                image: img
+            };
+
+            fleet.unshift(newCar);
+
+            closeAddCarModal();
+            renderFleet();
+            updateCountsAndStats();
+            showToast(`New ${brand} ${model} added to fleet!`, 'success');
+        }
+
+        // ================= ANALYTICS & REPORTS =================
+        function renderAnalyticsView() {
+            updateCountsAndStats();
+            renderRentalLedger(rentalHistory);
+        }
+
+        function renderRentalLedger(records) {
+            const tbody = document.getElementById('rental-history-table');
+
+            if (records.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="8" class="px-6 py-10 text-center text-slate-500 font-medium">
+                            No rental transactions recorded yet. Rent a vehicle to generate transaction history logs.
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            tbody.innerHTML = records.map(rec => `
+                <tr class="hover:bg-navy-800/40 transition text-xs">
+                    <td class="px-6 py-4 font-mono font-bold text-gold-accent">${rec.ref}</td>
+                    <td class="px-6 py-4 font-semibold text-white">
+                        <div>${rec.customerName}</div>
+                        <div class="text-[10px] text-slate-500 font-normal">${rec.contact}</div>
+                    </td>
+                    <td class="px-6 py-4 text-slate-200">${rec.carName}</td>
+                    <td class="px-6 py-4 text-slate-300">${rec.days} Day(s)</td>
+                    <td class="px-6 py-4 text-slate-400">${rec.addons}</td>
+                    <td class="px-6 py-4 font-extrabold text-emerald-400">$${rec.totalCost.toFixed(2)}</td>
+                    <td class="px-6 py-4">
+                        ${rec.status === 'Active'
+                            ? `<span class="px-2 py-0.5 rounded-md text-[10px] font-bold bg-sky-500/10 text-sky-400 border border-sky-500/20">Active Lease</span>`
+                            : `<span class="px-2 py-0.5 rounded-md text-[10px] font-bold bg-slate-800 text-slate-400 border border-slate-700">Completed</span>`
+                        }
+                    </td>
+                    <td class="px-6 py-4 text-slate-400">${rec.timestamp}</td>
+                </tr>
+            `).join('');
+        }
+
+        function filterReportTable() {
+            const query = document.getElementById('report-search').value.toLowerCase().trim();
+            const filtered = rentalHistory.filter(r => 
+                r.customerName.toLowerCase().includes(query) || 
+                r.carName.toLowerCase().includes(query) || 
+                r.ref.toLowerCase().includes(query)
+            );
+            renderRentalLedger(filtered);
+        }
+
+        // CSV Export Feature
+        function exportToCSV() {
+            if (rentalHistory.length === 0) {
+                showToast("No rental data available to export.", "error");
+                return;
+            }
+
+            let csvContent = "data:text/csv;charset=utf-8,";
+            csvContent += "Booking Ref,Customer Name,Contact,Vehicle,Duration (Days),Addons,Total Paid ($),Status,Date\n";
+
+            rentalHistory.forEach(r => {
+                const row = `"${r.ref}","${r.customerName}","${r.contact}","${r.carName}",${r.days},"${r.addons}",${r.totalCost.toFixed(2)},"${r.status}","${r.timestamp}"`;
+                csvContent += row + "\n";
+            });
+
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", `Apex_Elite_Rentals_Report_${new Date().toISOString().split('T')[0]}.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+
+            showToast("Rental ledger report downloaded successfully!", "success");
+        }
+
+        // Toast Notifications Helper
+        function showToast(message, type = 'info') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            
+            let bgClass = "bg-navy-800 text-slate-100 border-slate-700";
+            let icon = "info";
+
+            if (type === 'success') {
+                bgClass = "bg-emerald-950 text-emerald-200 border-emerald-600/50";
+                icon = "check-circle";
+            } else if (type === 'error') {
+                bgClass = "bg-rose-950 text-rose-200 border-rose-600/50";
+                icon = "alert-circle";
+            }
+
+            toast.className = `p-4 rounded-2xl border shadow-2xl flex items-center gap-3 text-xs font-semibold pointer-events-auto transition-all duration-300 transform translate-x-5 ${bgClass}`;
+            toast.innerHTML = `
+                <i data-lucide="${icon}" class="w-5 h-5 flex-shrink-0"></i>
+                <span class="flex-grow">${message}</span>
+            `;
+
+            container.appendChild(toast);
+            lucide.createIcons();
+
+            setTimeout(() => toast.classList.remove('translate-x-5'), 10);
+
+            setTimeout(() => {
+                toast.classList.add('opacity-0', 'translate-x-10');
+                setTimeout(() => toast.remove(), 300);
+            }, 3500);
+        }
+    </script>
+</body>
+</html>
